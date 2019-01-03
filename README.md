@@ -1,4 +1,4 @@
-# Topcoder SonarQube Scorer Processor
+# Topcoder member account Processor
 
 ## Dependencies
 
