@@ -3,94 +3,121 @@
  */
 
 const config = require('config')
-const _ = require('lodash')
-const request = require('superagent')
-const logger = require('./logger')
+const AWS = require('aws-sdk')
 
-const m2mAuth = require('tc-core-library-js').auth.m2m
-const m2m = m2mAuth(_.pick(config, ['AUTH0_URL', 'AUTH0_AUDIENCE', 'TOKEN_CACHE_TIME']))
+// Database instance mapping
+const dbs = {}
+// Database Document client mapping
+const dbClients = {}
+
+AWS.config.update({
+  region: config.AMAZON_AWS_REGION
+})
 
 /**
- * Wrap async function to standard express function
- * @param {Function} fn the async function
- * @returns {Function} the wrapped function
+ * Get DynamoDB Connection Instance
+ * @return {Object} DynamoDB Connection Instance
  */
-const wrapExpress = fn => (req, res, next) => {
-  fn(req, res, next).catch(next)
+function getDb () {
+  // cache it for better performance
+  if (!dbs['conn']) {
+    dbs['conn'] = new AWS.DynamoDB()
+  }
+  return dbs['conn']
 }
 
 /**
- * Wrap all functions from object
- * @param obj the object (controller exports)
- * @returns {Object|Array} the wrapped object
+ * Get DynamoDB Document Client
+ * @return {Object} DynamoDB Document Client Instance
  */
-const autoWrapExpress = (obj) => {
-  if (_.isArray(obj)) {
-    return obj.map(autoWrapExpress)
+function getDbClient () {
+  // cache it for better performance
+  if (!dbClients['client']) {
+    dbClients['client'] = new AWS.DynamoDB.DocumentClient()
   }
-  if (_.isFunction(obj)) {
-    if (obj.constructor.name === 'AsyncFunction') {
-      return wrapExpress(obj)
-    }
-    return obj
-  }
-  _.each(obj, (value, key) => {
-    obj[key] = autoWrapExpress(value)
+  return dbClients['client']
+}
+
+/**
+ * Creates table in DynamoDB
+ * @param     {object} model Table structure in JSON format
+ * @return    {promise} the result
+ */
+async function createTable (model) {
+  const db = getDb()
+  return new Promise((resolve, reject) => {
+    db.createTable(model, (err, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
   })
-  return obj
-}
-
-/*
- * Function to get M2M token
- * @returns {Promise}
- */
-const getM2Mtoken = async () => {
-  return m2m.getMachineToken(config.AUTH0_CLIENT_ID, config.AUTH0_CLIENT_SECRET)
 }
 
 /**
- * Function to send request to Member API
- * @param {String} reqType Type of the request GET / POST / PUT / PATCH
- * @param (String) path Complete path of the Member API URL
- * @param {Object} reqBody Body of the request
- * @returns {Promise} Promise of the response
+ * Deletes table in DynamoDB
+ * @param     {String} tableName Name of the table to be deleted
+ * @return    {promise} the result
  */
-const reqToMemberAPI = async (reqType, path, reqBody) => {
-  // Token necessary to send request to Member API
-  const token = await getM2Mtoken()
-  logger.debug(`M2M Token: ${token}`)
-  if (reqType === 'POST') {
-    // Post the request body to Member API
-    return request
-      .post(path)
-      .set('Authorization', `Bearer ${token}`)
-      .set('Content-Type', 'application/json')
-      .send(reqBody)
-  } else if (reqType === 'PUT') {
-    // Put the request body to Member API
-    return request
-      .put(path)
-      .set('Authorization', `Bearer ${token}`)
-      .set('Content-Type', 'application/json')
-      .send(reqBody)
-  } else if (reqType === 'PATCH') {
-    // Patch the request body to Member API
-    return request
-      .post(path)
-      .set('Authorization', `Bearer ${token}`)
-      .set('Content-Type', 'application/json')
-      .send(reqBody)
-  } else if (reqType === 'GET') {
-    // GET the requested URL from Member API
-    return request
-      .get(path)
-      .set('Authorization', `Bearer ${token}`)
-      .set('Content-Type', 'application/json')
+async function deleteTable (tableName) {
+  const db = getDb()
+  const item = {
+    TableName: tableName
   }
+  return new Promise((resolve, reject) => {
+    db.deleteTable(item, (err, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+  })
+}
+
+/**
+ * Insert record into DynamoDB
+ * @param     {object} record Data to be inserted
+ * @return    {promise} the result
+ */
+async function insertRecord (record) {
+  const dbClient = getDbClient()
+  return new Promise((resolve, reject) => {
+    dbClient.put(record, (err, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+  })
+}
+
+/**
+ * Update record in DynamoDB
+ * @param     {object} record Data to be updated
+ * @return    {promise} the result
+ */
+async function updateRecord (record) {
+  const dbClient = getDbClient()
+  return new Promise((resolve, reject) => {
+    dbClient.update(record, (err, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+  })
 }
 
 module.exports = {
-  wrapExpress,
-  autoWrapExpress,
-  reqToMemberAPI
+  getDb,
+  getDbClient,
+  createTable,
+  deleteTable,
+  insertRecord,
+  updateRecord
 }
