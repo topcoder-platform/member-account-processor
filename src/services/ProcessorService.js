@@ -75,17 +75,10 @@ processCreateUser.schema = {
       email: joi.string().trim().email().required(),
       firstName: joi.string().trim().required(),
       lastName: joi.string().trim().required(),
-      profiles: joi.array().items(joi.object().keys({
-        userId: joi.number().integer().min(1).required()
-      }).unknown(true)).min(1).required(),
+      profiles: joi.array(),
       status: joi.string().trim(),
-      country: joi.object().keys({
-        code: joi.string().trim().required(),
-        name: joi.string().trim().required()
-      }).unknown(true),
-      roles: joi.array().items(joi.object().keys({
-        roleName: joi.string().trim().required()
-      }).unknown(true)),
+      country: joi.object(),
+      roles: joi.array(),
       modifiedBy: joi.string().trim(),
       modifiedAt: joi.date(),
       createdBy: joi.string().trim(),
