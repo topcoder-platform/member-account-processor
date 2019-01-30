@@ -16,7 +16,7 @@ const helper = require('../common/helper')
  */
 function convertPayload (user) {
   const memberProfile = {
-    userId: user.profiles[0].userId,
+    userId: user.profiles ? user.profiles[0].userId : null,
     firstName: user.firstName,
     lastName: user.lastName,
     handle: user.handle,

@@ -20,8 +20,8 @@ module.exports = {
   COPILOT_ROLE_NAME: process.env.COPILOT_ROLE_NAME || 'copilot',
 
   // Kafka topics related to Creation and Update of User
-  USER_CREATE_TOPIC: process.env.USER_CREATE_TOPIC || 'event.user.created',
-  USER_UPDATE_TOPIC: process.env.USER_UPDATE_TOPIC || 'event.user.updated',
+  USER_CREATE_TOPIC: process.env.USER_CREATE_TOPIC || 'identity.notification.create',
+  USER_UPDATE_TOPIC: process.env.USER_UPDATE_TOPIC || 'identity.notification.update',
 
   // Kafka output topics to be consumed by member-processor-es to save member profile data in Elasticsearch
   USER_CREATE_OUTPUT_TOPIC: process.env.USER_CREATE_OUTPUT_TOPIC || 'member.action.profile.create',
