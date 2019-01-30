@@ -16,7 +16,7 @@ const helper = require('../common/helper')
  */
 function convertPayload (user) {
   const memberProfile = {
-    userId: user.profiles ? user.profiles[0].userId : null,
+    userId: Number(user.id),
     firstName: user.firstName,
     lastName: user.lastName,
     handle: user.handle,
@@ -71,15 +71,19 @@ processCreateUser.schema = {
     timestamp: joi.date().required(),
     'mime-type': joi.string().required(),
     payload: joi.object().keys({
+      id: joi.string().trim().required(),
       handle: joi.string().trim().required(),
       email: joi.string().trim().email().required(),
       firstName: joi.string().trim().required(),
       lastName: joi.string().trim().required(),
+      profiles: joi.array().allow(null),
       status: joi.string().trim(),
-      modifiedBy: joi.string().trim(),
-      modifiedAt: joi.date(),
-      createdBy: joi.string().trim(),
-      createdAt: joi.date()
+      country: joi.object().allow(null),
+      roles: joi.array().allow(null),
+      modifiedBy: joi.string().trim().allow(null),
+      modifiedAt: joi.date().allow(null),
+      createdBy: joi.string().trim().allow(null),
+      createdAt: joi.date().allow(null)
     }).unknown(true).required()
   }).required(),
   producer: joi.object().required()
