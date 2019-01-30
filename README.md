@@ -152,4 +152,3 @@ npm start
 
 - for the bug fix mentioned in challenge spec, this processor uses group consumer, which can consume un-committed Kafka messages created during down time;
   see Validation.md for verification of this bug fix
-

@@ -55,10 +55,18 @@ const dataHandler = async (messageSet, topic, partition) => {
     return (async () => {
       switch (topic) {
         case config.USER_CREATE_TOPIC:
-          await ProcessorService.processCreateUser(messageJSON, producer)
+          if(!messageJSON.payload.hasOwnProperty('notificationType')) {
+            await ProcessorService.processCreateUser(messageJSON, producer)
+          } else {
+            logger.error('Ignore message.')
+          }
           break
         case config.USER_UPDATE_TOPIC:
-          await ProcessorService.processUpdateUser(messageJSON, producer)
+          if(!messageJSON.payload.hasOwnProperty('notificationType')) {
+            await ProcessorService.processUpdateUser(messageJSON, producer)
+          } else {
+            logger.error('Ignore message.')
+          }
           break
         default:
           throw new Error(`Invalid topic: ${topic}`)
