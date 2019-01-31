@@ -26,5 +26,11 @@ module.exports = {
   // Kafka output topics to be consumed by member-processor-es to save member profile data in Elasticsearch
   USER_CREATE_OUTPUT_TOPIC: process.env.USER_CREATE_OUTPUT_TOPIC || 'member.action.profile.create',
   USER_UPDATE_OUTPUT_TOPIC: process.env.USER_UPDATE_OUTPUT_TOPIC || 'member.action.profile.update',
-  OUTPUT_MESSAGE_ORIGINATOR: process.env.OUTPUT_MESSAGE_ORIGINATOR || 'tc-member-account-processor'
+  OUTPUT_MESSAGE_ORIGINATOR: process.env.OUTPUT_MESSAGE_ORIGINATOR || 'tc-member-account-processor',
+
+  // User states
+  USER_STATES: {
+    ACTIVE: process.env.USER_ACTIVE_STATE || 'ACTIVE',
+    UNVERIFIED: process.env.USER_UNVERIFIED_STATE || 'UNVERIFIED'
+  }
 }
