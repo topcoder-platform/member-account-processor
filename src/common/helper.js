@@ -78,24 +78,6 @@ async function deleteTable (tableName) {
 }
 
 /**
- * Insert record into DynamoDB
- * @param     {object} record Data to be inserted
- * @return    {promise} the result
- */
-async function insertRecord (record) {
-  const dbClient = getDbClient()
-  return new Promise((resolve, reject) => {
-    dbClient.put(record, (err, data) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(data)
-      }
-    })
-  })
-}
-
-/**
  * Update record in DynamoDB
  * @param     {object} record Data to be updated
  * @return    {promise} the result
@@ -118,6 +100,5 @@ module.exports = {
   getDbClient,
   createTable,
   deleteTable,
-  insertRecord,
   updateRecord
 }

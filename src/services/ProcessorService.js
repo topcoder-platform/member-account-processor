@@ -35,6 +35,62 @@ function convertPayload (user) {
 }
 
 /**
+ * Create record to be updated/inserted into dynamoDB
+ * @param {Object} memberProfile the member profile object
+ */
+function formatRecord (memberProfile) {
+  // update member profile in DynamoDB
+  const record = {
+    TableName: config.AMAZON_AWS_DYNAMODB_MEMBER_PROFILE_TABLE,
+    Key: {
+      userId: memberProfile.userId
+    },
+    UpdateExpression: `set firstName = :firstName, lastName = :lastName,
+                          handle = :handle, handleLower = :handleLower,
+                          email = :email, copilot = :copilot`,
+    ExpressionAttributeValues: {
+      ':firstName': memberProfile.firstName,
+      ':lastName': memberProfile.lastName,
+      ':handle': memberProfile.handle,
+      ':handleLower': memberProfile.handleLower,
+      ':email': memberProfile.email,
+      ':copilot': memberProfile.copilot
+    },
+    ExpressionAttributeNames: {}
+  }
+  if (memberProfile.status) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, #status = :s`
+    record['ExpressionAttributeValues'][':s'] = memberProfile.status
+    record['ExpressionAttributeNames']['#status'] = 'status'
+  }
+  if (memberProfile.homeCountryCode) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, homeCountryCode = :homeCountryCode`
+    record['ExpressionAttributeValues'][':homeCountryCode'] = memberProfile.homeCountryCode
+  }
+  if (memberProfile.country) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, country = :country`
+    record['ExpressionAttributeValues'][':country'] = memberProfile.country
+  }
+  if (memberProfile.createdAt) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, createdAt = :createdAt`
+    record['ExpressionAttributeValues'][':createdAt'] = memberProfile.createdAt
+  }
+  if (memberProfile.createdBy) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, createdBy = :createdBy`
+    record['ExpressionAttributeValues'][':createdBy'] = memberProfile.createdBy
+  }
+  if (memberProfile.updatedAt) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, updatedAt = :updatedAt`
+    record['ExpressionAttributeValues'][':updatedAt'] = memberProfile.updatedAt
+  }
+  if (memberProfile.updatedBy) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, updatedBy = :updatedBy`
+    record['ExpressionAttributeValues'][':updatedBy'] = memberProfile.updatedBy
+  }
+  return record
+}
+
+/**
  * Process the User creation event
  * @param {Object} message the Kafka message in JSON format
  * @param {Object} producer the Kafka producer
@@ -44,12 +100,10 @@ async function processCreateUser (message, producer) {
     message.payload.createdAt = new Date()
   }
   const memberProfile = convertPayload(message.payload)
+  const record = formatRecord(memberProfile)
 
-  // create member profile in DynamoDB
-  await helper.insertRecord({
-    TableName: config.AMAZON_AWS_DYNAMODB_MEMBER_PROFILE_TABLE,
-    Item: memberProfile
-  })
+  // create or update member profile in DynamoDB
+  await helper.updateRecord(record)
   logger.info('DynamoDB record is created successfully.')
 
   // send output message to Kafka
@@ -101,54 +155,7 @@ async function processUpdateUser (message, producer) {
   }
   const memberProfile = convertPayload(message.payload)
 
-  // update member profile in DynamoDB
-  const record = {
-    TableName: config.AMAZON_AWS_DYNAMODB_MEMBER_PROFILE_TABLE,
-    Key: {
-      userId: memberProfile.userId
-    },
-    UpdateExpression: `set firstName = :firstName, lastName = :lastName,
-                           handle = :handle, handleLower = :handleLower,
-                           email = :email, copilot = :copilot`,
-    ExpressionAttributeValues: {
-      ':firstName': memberProfile.firstName,
-      ':lastName': memberProfile.lastName,
-      ':handle': memberProfile.handle,
-      ':handleLower': memberProfile.handleLower,
-      ':email': memberProfile.email,
-      ':copilot': memberProfile.copilot
-    },
-    ExpressionAttributeNames: {}
-  }
-  if (memberProfile.status) {
-    record['UpdateExpression'] = record['UpdateExpression'] + `, #status = :s`
-    record['ExpressionAttributeValues'][':s'] = memberProfile.status
-    record['ExpressionAttributeNames']['#status'] = 'status'
-  }
-  if (memberProfile.homeCountryCode) {
-    record['UpdateExpression'] = record['UpdateExpression'] + `, homeCountryCode = :homeCountryCode`
-    record['ExpressionAttributeValues'][':homeCountryCode'] = memberProfile.homeCountryCode
-  }
-  if (memberProfile.country) {
-    record['UpdateExpression'] = record['UpdateExpression'] + `, country = :country`
-    record['ExpressionAttributeValues'][':country'] = memberProfile.country
-  }
-  if (memberProfile.createdAt) {
-    record['UpdateExpression'] = record['UpdateExpression'] + `, createdAt = :createdAt`
-    record['ExpressionAttributeValues'][':createdAt'] = memberProfile.createdAt
-  }
-  if (memberProfile.createdBy) {
-    record['UpdateExpression'] = record['UpdateExpression'] + `, createdBy = :createdBy`
-    record['ExpressionAttributeValues'][':createdBy'] = memberProfile.createdBy
-  }
-  if (memberProfile.updatedAt) {
-    record['UpdateExpression'] = record['UpdateExpression'] + `, updatedAt = :updatedAt`
-    record['ExpressionAttributeValues'][':updatedAt'] = memberProfile.updatedAt
-  }
-  if (memberProfile.updatedBy) {
-    record['UpdateExpression'] = record['UpdateExpression'] + `, updatedBy = :updatedBy`
-    record['ExpressionAttributeValues'][':updatedBy'] = memberProfile.updatedBy
-  }
+  const record = formatRecord(memberProfile)
   await helper.updateRecord(record)
   logger.info('DynamoDB record is updated successfully.')
 
