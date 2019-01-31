@@ -9,6 +9,12 @@ const logger = require('../common/logger')
 const helper = require('../common/helper')
 
 /**
+ * Convert date to epoch
+ * @param {Date|String} date the date
+ */
+const toEpoch = date => (new Date(date)).getTime()
+
+/**
  * Convert user payload from identity service to member profile data of ap-member-microservice,
  * i.e. the samle data format given in forum, the converted data will be saved to DynamoDB and Elasticsearch.
  * @param {Object} user the user payload to convert
@@ -26,9 +32,9 @@ function convertPayload (user) {
     homeCountryCode: user.country ? user.country.code : null,
     country: user.country ? user.country.name : null,
     copilot: user.roles ? !!_.find(user.roles, (role) => role.roleName === config.COPILOT_ROLE_NAME) : false,
-    createdAt: user.createdAt ? user.createdAt.toISOString() : null,
+    createdAt: user.createdAt ? toEpoch(user.createdAt) : null,
     createdBy: user.createdBy,
-    updatedAt: user.modifiedAt ? user.modifiedAt.toISOString() : null,
+    updatedAt: user.modifiedAt ? toEpoch(user.modifiedAt) : null,
     updatedBy: user.modifiedBy
   }
   return memberProfile
