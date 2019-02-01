@@ -23,26 +23,6 @@ const logger = createLogger({
 })
 
 /**
- * Log error details with signature
- * @param err the error
- * @param signature The signature
- */
-logger.logFullError = (err, signature) => {
-  if (!err) {
-    return
-  }
-
-  if (signature) {
-    logger.error(`Error happened in ${signature}`)
-  }
-
-  if (!err.logged) {
-    logger.error(util.inspect(err))
-    err.logged = true
-  }
-}
-
-/**
  * Remove invalid properties from the object and hide long arrays
  * @param {Object} obj the object
  * @returns {Object} the new object with removed properties
@@ -53,7 +33,9 @@ const _sanitizeObject = (obj) => {
     return JSON.parse(JSON.stringify(obj, (name, value) => {
       // Array of field names that should not be logged
       // add field if necessary (password, tokens etc)
-      const removeFields = []
+      const removeFields = [
+        'producer'
+      ]
       if (_.includes(removeFields, name)) {
         return '<removed>'
       }
@@ -79,6 +61,26 @@ const _combineObject = (params, arr) => {
     ret[params[i]] = arg
   })
   return ret
+}
+
+/**
+ * Log error details with signature
+ * @param err the error
+ * @param signature The signature
+ */
+logger.logFullError = (err, signature) => {
+  if (!err) {
+    return
+  }
+
+  if (signature) {
+    logger.error(`Error happened in ${signature}`)
+  }
+
+  if (!err.logged) {
+    logger.error(util.inspect(_sanitizeObject(err)))
+    err.logged = true
+  }
 }
 
 /**
