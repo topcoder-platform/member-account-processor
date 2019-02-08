@@ -23,8 +23,8 @@ const toEpoch = date => (new Date(date)).getTime()
 function convertPayload (user) {
   const memberProfile = {
     userId: Number(user.id),
-    firstName: user.firstName,
-    lastName: user.lastName,
+    firstName: user.firstName ? user.firstName : 'N/A',
+    lastName: user.lastName ? user.lastName : 'N/A',
     handle: user.handle,
     handleLower: user.handle.toLowerCase(),
     email: user.email,
@@ -105,6 +105,7 @@ async function processCreateUser (message, producer) {
   if (!message.payload.createdAt) {
     message.payload.createdAt = new Date()
   }
+
   const memberProfile = convertPayload(message.payload)
   const record = formatRecord(memberProfile)
 
@@ -134,8 +135,8 @@ processCreateUser.schema = {
       id: joi.string().trim().required(),
       handle: joi.string().trim().required(),
       email: joi.string().trim().email().required(),
-      firstName: joi.string().trim().required(),
-      lastName: joi.string().trim().required(),
+      firstName: joi.string().trim().allow('').allow(null),
+      lastName: joi.string().trim().allow('').allow(null),
       profiles: joi.array().allow(null),
       status: joi.string().trim(),
       active: joi.boolean().allow(null),
