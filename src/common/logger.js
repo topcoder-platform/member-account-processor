@@ -23,26 +23,6 @@ const logger = createLogger({
 })
 
 /**
- * Log error details with signature
- * @param err the error
- * @param signature The signature
- */
-logger.logFullError = (err, signature) => {
-  if (!err) {
-    return
-  }
-
-  if (signature) {
-    logger.error(`Error happened in ${signature}`)
-  }
-
-  if (!err.logged) {
-    logger.error(util.inspect(err))
-    err.logged = true
-  }
-}
-
-/**
  * Remove invalid properties from the object and hide long arrays
  * @param {Object} obj the object
  * @returns {Object} the new object with removed properties
@@ -53,7 +33,9 @@ const _sanitizeObject = (obj) => {
     return JSON.parse(JSON.stringify(obj, (name, value) => {
       // Array of field names that should not be logged
       // add field if necessary (password, tokens etc)
-      const removeFields = []
+      const removeFields = [
+        'producer'
+      ]
       if (_.includes(removeFields, name)) {
         return '<removed>'
       }
@@ -82,6 +64,26 @@ const _combineObject = (params, arr) => {
 }
 
 /**
+ * Log error details with signature
+ * @param err the error
+ * @param signature The signature
+ */
+logger.logFullError = (err, signature) => {
+  if (!err) {
+    return
+  }
+
+  if (signature) {
+    logger.error(`Error happened in ${signature}`)
+  }
+
+  if (!err.logged) {
+    logger.error(util.inspect(_sanitizeObject(err)))
+    err.logged = true
+  }
+}
+
+/**
  * Decorate all functions of a service and log debug information if DEBUG is enabled
  * @param {Object} service the service
  */
@@ -95,7 +97,7 @@ logger.decorateWithLogging = (service) => {
       logger.debug(`ENTER ${name}`)
       logger.debug('input arguments')
       const args = Array.prototype.slice.call(arguments)
-      logger.debug(util.inspect(_sanitizeObject(_combineObject(params, args))))
+      //logger.debug(util.inspect(_sanitizeObject(_combineObject(params, args))))
       try {
         const result = await method.apply(this, arguments)
         logger.debug(`EXIT ${name}`)
