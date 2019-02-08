@@ -97,7 +97,7 @@ logger.decorateWithLogging = (service) => {
       logger.debug(`ENTER ${name}`)
       logger.debug('input arguments')
       const args = Array.prototype.slice.call(arguments)
-      logger.debug(util.inspect(_sanitizeObject(_combineObject(params, args))))
+      //logger.debug(util.inspect(_sanitizeObject(_combineObject(params, args))))
       try {
         const result = await method.apply(this, arguments)
         logger.debug(`EXIT ${name}`)
