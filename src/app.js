@@ -58,14 +58,14 @@ const dataHandler = async (messageSet, topic, partition) => {
           if (!messageJSON.payload.hasOwnProperty('notificationType')) {
             await ProcessorService.processCreateUser(messageJSON, producer)
           } else {
-            logger.error('Ignore message.')
+            logger.info('Ignore message.')
           }
           break
         case config.USER_UPDATE_TOPIC:
           if (!messageJSON.payload.hasOwnProperty('notificationType')) {
             await ProcessorService.processUpdateUser(messageJSON, producer)
           } else {
-            logger.error('Ignore message.')
+            logger.info('Ignore message.')
           }
           break
         default:
