@@ -29,7 +29,7 @@ function convertPayload (user) {
     handleLower: user.handle.toLowerCase(),
     email: user.email,
     status: user.active ? config.USER_STATES.ACTIVE : config.USER_STATES.UNVERIFIED,
-    homeCountryCode: user.country ? user.country.code : null,
+    homeCountryCode: user.country ? user.country.isoAlpha3Code : null,
     country: user.country ? user.country.name : null,
     copilot: user.roles ? !!_.find(user.roles, (role) => role.roleName === config.COPILOT_ROLE_NAME) : false,
     createdAt: user.createdAt ? toEpoch(user.createdAt) : null,
@@ -37,7 +37,7 @@ function convertPayload (user) {
     updatedAt: user.modifiedAt ? toEpoch(user.modifiedAt) : null,
     updatedBy: user.modifiedBy
   }
-  return memberProfile
+  return _.omitBy(memberProfile, _.isNil)
 }
 
 /**
@@ -139,7 +139,7 @@ processCreateUser.schema = {
       lastName: joi.string().trim().allow('').allow(null),
       profiles: joi.array().allow(null),
       status: joi.string().trim(),
-      active: joi.boolean().allow(null),
+      active: joi.boolean().required(),
       country: joi.object().allow(null),
       roles: joi.array().allow(null),
       modifiedBy: joi.string().trim().allow(null),
