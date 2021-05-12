@@ -30,6 +30,7 @@ function convertPayload (user) {
     email: user.email,
     status: user.active ? config.USER_STATES.ACTIVE : config.USER_STATES.UNVERIFIED,
     homeCountryCode: user.country ? user.country.isoAlpha3Code : null,
+    competitionCountryCode: user.country ? user.country.isoAlpha3Code : null,
     country: user.country ? user.country.name : null,
     copilot: user.roles ? !!_.find(user.roles, (role) => role.roleName === config.COPILOT_ROLE_NAME) : false,
     createdAt: user.createdAt ? toEpoch(user.createdAt) : null,
@@ -72,6 +73,10 @@ function formatRecord (memberProfile) {
   if (memberProfile.homeCountryCode) {
     record['UpdateExpression'] = record['UpdateExpression'] + `, homeCountryCode = :homeCountryCode`
     record['ExpressionAttributeValues'][':homeCountryCode'] = memberProfile.homeCountryCode
+  }
+  if (memberProfile.competitionCountryCode) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, competitionCountryCode = :competitionCountryCode`
+    record['ExpressionAttributeValues'][':competitionCountryCode'] = memberProfile.competitionCountryCode
   }
   if (memberProfile.country) {
     record['UpdateExpression'] = record['UpdateExpression'] + `, country = :country`
