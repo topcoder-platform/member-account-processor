@@ -11,7 +11,7 @@
     "delete-table": "node src/deleteTable.js"
   },
   "dependencies": {
-    "aws-sdk": "^2.390.0",
+    "aws-sdk": "^2.999.0",
     "bluebird": "^3.5.1",
     "config": "^3.0.1",
     "dotenv": "^6.2.0",
