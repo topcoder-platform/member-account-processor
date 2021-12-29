@@ -128,6 +128,15 @@ async function processCreateUser (message, producer) {
   }
   await producer.send({ topic: outputMessage.topic, message: { value: JSON.stringify(outputMessage) } })
   logger.info(`Member profile creation message is successfully sent to Kafka topic ${outputMessage.topic}`)
+
+  const regSource = message.payload.regSource
+  logger.info(`Registration source for member with handle ${message.payload.handle} is ${regSource}.`)
+  if (_.find(config.SKIP_ONBOARDING_REG_SOURCES, source => source === regSource) != null) {
+    logger.info(`Registration source is part of sources that can skip onboarding.`)
+    helper.addSkipOnboardingInOnboardingChecklist(message.payload.handle, `Registration source[${regSource}] doesn't require onboarding.`)
+  } else {
+    logger.info(`Registration source requires member to be presented with the onboarding wizard.`)
+  }
 }
 
 processCreateUser.schema = {
@@ -150,7 +159,8 @@ processCreateUser.schema = {
       modifiedBy: joi.string().trim().allow(null),
       modifiedAt: joi.date().allow(null),
       createdBy: joi.string().trim().allow(null),
-      createdAt: joi.date().allow(null)
+      createdAt: joi.date().allow(null),
+      regSource: joi.string().trim().allow('').allow(null)
     }).unknown(true).required()
   }).required(),
   producer: joi.object().required()
