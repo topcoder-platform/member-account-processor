@@ -113,7 +113,9 @@ async function updateRecord (record) {
 }
 
 /**
- *
+ * Get trait onboarding_checklist from member Api
+ * @param     {string} handle the member handle
+ * @returns   {promise} the result
  */
 async function getOnboardingChecklist (handle, token) {
   const url = `${config.MEMBERS_API_URL}/${handle}/traits?traitIds=onboarding_checklist`
@@ -128,39 +130,48 @@ async function getOnboardingChecklist (handle, token) {
     if (responseObject.length > 0) {
       return responseObject[0].traits.data
     }
-  } catch (err) {}
+  } catch (err) { }
 
   return []
 }
 
+/**
+ * update trait onboarding_checklist to indicate to consumers that showing the user
+ * identified by handle is not required
+ *
+ * @param     {string} handle the handle of the member
+ * @param     {string} message the skip reason
+ * @returns   {promise}
+ */
 async function addSkipOnboardingInOnboardingChecklist (handle, message) {
   const token = await getM2MToken()
 
   const existingOnboardingCheckilst = await getOnboardingChecklist(handle, token)
   const shouldCreate = existingOnboardingCheckilst.length === 0
 
-  const skipOnboardingIndex = _.findIndex(existingOnboardingCheckilst, data => {
-    if (data['skip_onboarding'] != null) {
-      return true
-    }
-
-    return false
-  })
-
-  const skipOnboardingData = {
-    skip_onboarding: {
-      value: true,
+  const onboardingWizardIndex = _.findIndex(existingOnboardingCheckilst, data => data['onboarding_wizard'] != null)
+  const onboardingWizardData = {
+    onboarding_wizard: {
+      skip: true,
       date: new Date().getTime(),
-      message
+      metadata: {
+        skipReason: message
+      },
+      status: 'pending_at_user'
     }
   }
 
   let traitData = existingOnboardingCheckilst
 
-  if (skipOnboardingIndex === -1) {
-    traitData.push(skipOnboardingData)
+  if (onboardingWizardIndex === -1) {
+    traitData.push(onboardingWizardData)
   } else {
-    traitData[skipOnboardingIndex] = skipOnboardingData
+    // copy over existing status
+    if (traitData[onboardingWizardIndex].onboarding_wizard.status != null) {
+      onboardingWizardData.onboarding_wizard.status = traitData[onboardingWizardIndex].onboarding_wizard.status
+    }
+
+    traitData[onboardingWizardIndex] = onboardingWizardData
   }
 
   const payload = [{
@@ -180,14 +191,14 @@ async function addSkipOnboardingInOnboardingChecklist (handle, message) {
 
   try {
     if (shouldCreate) {
-      logger.info(`Creating onboarding_checklist with skip_onboarding for user with handle ${handle}.`)
+      logger.info(`Creating onboarding_checklist with onboarding_wizard for user with handle ${handle}.`)
       await axios.post(url, payload, requestConfig)
     } else {
-      logger.info(`Updating onboarding_checklist to add skip_onboarding for user with handle ${handle}.`)
+      logger.info(`Updating onboarding_checklist to add onboarding_wizard for user with handle ${handle}.`)
       await axios.put(url, payload, requestConfig)
     }
   } catch (err) {
-    logger.error(`Failed to set skip_onboarding in onboarding_checklist for user with handle ${handle}. Failed with error ${JSON.stringify(err)}`)
+    logger.error(`Failed to set onboarding_wizard in onboarding_checklist for user with handle ${handle}. Failed with error ${JSON.stringify(err)}`)
   }
 }
 
