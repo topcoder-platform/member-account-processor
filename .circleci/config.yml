@@ -57,7 +57,7 @@ workflows:
           context : org-global      
           filters:
             branches:
-              only: [ "dev", "dev-circleci" ]
+              only: [ "dev", "dev-circleci", 'feat/onboard-flow-based-on-reg-source' ]
       - "build-prod":
           context : org-global      
           filters:
