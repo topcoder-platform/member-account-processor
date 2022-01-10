@@ -2,8 +2,14 @@
  * Contains generic helper methods
  */
 
+const _ = require('lodash')
 const config = require('config')
 const AWS = require('aws-sdk')
+const axios = require('axios')
+const m2mAuth = require('tc-core-library-js').auth.m2m
+const logger = require('./logger')
+
+let m2m
 
 // Database instance mapping
 const dbs = {}
@@ -13,6 +19,17 @@ const dbClients = {}
 AWS.config.update({
   region: config.AMAZON_AWS_REGION
 })
+
+/*
+ * Function to get M2M token
+ * @returns {Promise}
+ */
+async function getM2MToken () {
+  if (!m2m) {
+    m2m = m2mAuth(_.pick(config.auth0, ['AUTH0_URL', 'AUTH0_AUDIENCE', 'AUTH0_PROXY_SERVER_URL']))
+  }
+  return m2m.getMachineToken(config.auth0.AUTH0_CLIENT_ID, config.auth0.AUTH0_CLIENT_SECRET)
+}
 
 /**
  * Get DynamoDB Connection Instance
@@ -95,10 +112,101 @@ async function updateRecord (record) {
   })
 }
 
+/**
+ * Get trait onboarding_checklist from member Api
+ * @param     {string} handle the member handle
+ * @returns   {promise} the result
+ */
+async function getOnboardingChecklist (handle, token) {
+  const url = `${config.MEMBERS_API_URL}/${handle}/traits?traitIds=onboarding_checklist`
+  try {
+    const res = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    const responseObject = res.data
+    if (responseObject.length > 0) {
+      return responseObject[0].traits.data
+    }
+  } catch (err) { }
+
+  return []
+}
+
+/**
+ * update trait onboarding_checklist to indicate to consumers that showing the user
+ * identified by handle is not required
+ *
+ * @param     {string} handle the handle of the member
+ * @param     {string} message the skip reason
+ * @returns   {promise}
+ */
+async function addSkipOnboardingInOnboardingChecklist (handle, message) {
+  const token = await getM2MToken()
+
+  const existingOnboardingCheckilst = await getOnboardingChecklist(handle, token)
+  const shouldCreate = existingOnboardingCheckilst.length === 0
+
+  const onboardingWizardIndex = _.findIndex(existingOnboardingCheckilst, data => data['onboarding_wizard'] != null)
+  const onboardingWizardData = {
+    onboarding_wizard: {
+      skip: true,
+      date: new Date().getTime(),
+      metadata: {
+        skipReason: message
+      },
+      status: 'pending_at_user'
+    }
+  }
+
+  let traitData = existingOnboardingCheckilst
+
+  if (onboardingWizardIndex === -1) {
+    traitData.push(onboardingWizardData)
+  } else {
+    // copy over existing status
+    if (traitData[onboardingWizardIndex].onboarding_wizard.status != null) {
+      onboardingWizardData.onboarding_wizard.status = traitData[onboardingWizardIndex].onboarding_wizard.status
+    }
+
+    traitData[onboardingWizardIndex] = onboardingWizardData
+  }
+
+  const payload = [{
+    categoryName: 'Onboarding Checklist',
+    traitId: 'onboarding_checklist',
+    traits: {
+      data: traitData
+    }
+  }]
+
+  const url = `${config.MEMBERS_API_URL}/${handle}/traits`
+  const requestConfig = {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  }
+
+  try {
+    if (shouldCreate) {
+      logger.info(`Creating onboarding_checklist with onboarding_wizard for user with handle ${handle}.`)
+      await axios.post(url, payload, requestConfig)
+    } else {
+      logger.info(`Updating onboarding_checklist to add onboarding_wizard for user with handle ${handle}.`)
+      await axios.put(url, payload, requestConfig)
+    }
+  } catch (err) {
+    logger.error(`Failed to set onboarding_wizard in onboarding_checklist for user with handle ${handle}. Failed with error ${JSON.stringify(err)}`)
+  }
+}
+
 module.exports = {
   getDb,
   getDbClient,
   createTable,
   deleteTable,
-  updateRecord
+  updateRecord,
+  addSkipOnboardingInOnboardingChecklist
 }

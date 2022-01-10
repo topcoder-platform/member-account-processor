@@ -32,5 +32,19 @@ module.exports = {
   USER_STATES: {
     ACTIVE: process.env.USER_ACTIVE_STATE || 'ACTIVE',
     UNVERIFIED: process.env.USER_UNVERIFIED_STATE || 'UNVERIFIED'
-  }
+  },
+
+  auth0: {
+    AUTH0_URL: process.env.AUTH0_URL,
+    AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
+    AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
+    AUTH0_CLIENT_SECRET: process.env.AUTH0_CLIENT_SECRET,
+    AUTH0_PROXY_SERVER_URL: process.env.AUTH0_PROXY_SERVER_URL,
+    TOKEN_CACHE_TIME: process.env.TOKEN_CACHE_TIME
+  },
+
+  MEMBERS_API_URL: process.env.MEMBERS_API_URL || 'https://api.topcoder-dev.com/v5/members',
+
+  // List of registration sources that can skip the onboarding wizard
+  SKIP_ONBOARDING_REG_SOURCES: process.env.SKIP_ONBOARDING_REG_SOURCES || ['taasApp', 'gigs']
 }
