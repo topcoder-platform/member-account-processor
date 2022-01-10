@@ -46,7 +46,7 @@ jobs:
     <<: *defaults
     environment:
       DEPLOY_ENV: "PROD"
-      LOGICAL_ENV: "PROD"
+      LOGICAL_ENV: "prod"
     steps: *build_steps  
 workflows:
   version: 2
