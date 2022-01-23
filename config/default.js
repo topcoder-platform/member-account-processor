@@ -46,5 +46,5 @@ module.exports = {
   MEMBERS_API_URL: process.env.MEMBERS_API_URL || 'https://api.topcoder-dev.com/v5/members',
 
   // List of registration sources that can skip the onboarding wizard
-  SKIP_ONBOARDING_REG_SOURCES: process.env.SKIP_ONBOARDING_REG_SOURCES || ['taasApp', 'gigs']
+  SKIP_ONBOARDING_REG_SOURCES: process.env.SKIP_ONBOARDING_REG_SOURCES || ['taasApp', 'gigs', 'selfService']
 }
