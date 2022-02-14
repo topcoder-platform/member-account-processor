@@ -133,8 +133,12 @@ async function processCreateUser (message, producer) {
   logger.info(`Registration source for member with handle ${message.payload.handle} is ${regSource}.`)
   if (_.find(config.SKIP_ONBOARDING_REG_SOURCES, source => source === regSource) != null) {
     logger.info(`Registration source is part of sources that can skip onboarding.`)
-    helper.addSkipOnboardingInOnboardingChecklist(message.payload.handle, `Registration source[${regSource}] doesn't require onboarding.`)
-  } else {
+    helper.addOverrideOnboardingChecklist(message.payload.handle, 'skip', `Registration source[${regSource}] doesn't require onboarding.`)
+  } else if (_.find(config.FORWARD_TO_RET_URL_REG_SOURCES, source => source === regSource) != null) {
+    logger.info(`Registration source is part of sources that require taking user to original registration url (retUrl).`)
+    helper.addOverrideOnboardingChecklist(message.payload.handle, 'useRetUrl', `Registration source[${regSource}] requires taking user to original registration url at the end of onboarding flow.`)
+  }  
+  else {
     logger.info(`Registration source requires member to be presented with the onboarding wizard.`)
   }
 }
