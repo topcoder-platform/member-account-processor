@@ -136,14 +136,16 @@ async function getOnboardingChecklist (handle, token) {
 }
 
 /**
- * update trait onboarding_checklist to indicate to consumers that showing the user
- * identified by handle is not required
+ * update trait onboarding_checklist to indicate to consumers if onboarding wizard
+ * can be skipped or if onboarding wizard should take the user to the original url
+ * the user signed up from
  *
  * @param     {string} handle the handle of the member
- * @param     {string} message the skip reason
+ * @param     {string} type skip to skip the onboarding wizard; forward to use retUrl
+ * @param     {string} message the skip/carry forward reason
  * @returns   {promise}
  */
-async function addSkipOnboardingInOnboardingChecklist (handle, message) {
+async function addOverrideOnboardingChecklist (handle, type, message) {
   const token = await getM2MToken()
 
   const existingOnboardingCheckilst = await getOnboardingChecklist(handle, token)
@@ -152,10 +154,10 @@ async function addSkipOnboardingInOnboardingChecklist (handle, message) {
   const onboardingWizardIndex = _.findIndex(existingOnboardingCheckilst, data => data['onboarding_wizard'] != null)
   const onboardingWizardData = {
     onboarding_wizard: {
-      skip: true,
+      override: type,
       date: new Date().getTime(),
       metadata: {
-        skipReason: message
+        overrideReason: message
       },
       status: 'pending_at_user'
     }
@@ -208,5 +210,5 @@ module.exports = {
   createTable,
   deleteTable,
   updateRecord,
-  addSkipOnboardingInOnboardingChecklist
+  addOverrideOnboardingChecklist
 }

@@ -46,5 +46,8 @@ module.exports = {
   MEMBERS_API_URL: process.env.MEMBERS_API_URL || 'https://api.topcoder-dev.com/v5/members',
 
   // List of registration sources that can skip the onboarding wizard
-  SKIP_ONBOARDING_REG_SOURCES: process.env.SKIP_ONBOARDING_REG_SOURCES || ['taasApp', 'gigs', 'selfService']
+  SKIP_ONBOARDING_REG_SOURCES: process.env.SKIP_ONBOARDING_REG_SOURCES || ['taasApp', 'gigs', 'selfService'],
+  // List of registration sources that should carry over original registration url (retUrl); users registering
+  // through these sources will be taken to retUrl at the end of the onboarding process
+  FORWARD_TO_RET_URL_REG_SOURCES: process.env.FORWARD_TO_RET_URL_REG_SOURCES || ['challenges']
 }
