@@ -199,9 +199,61 @@ async function processUpdateUser (message, producer) {
 
 processUpdateUser.schema = processCreateUser.schema
 
+/**
+ * Process the User login event
+ * @param {Object} message the Kafka message in JSON format
+ * @param {Object} producer the Kafka producer
+ */
+async function processUserLogin (message, producer) {
+  const member = message.payload
+  const record = {
+    TableName: config.AMAZON_AWS_DYNAMODB_MEMBER_PROFILE_TABLE,
+    Key: {
+      userId: member.userId
+    },
+    UpdateExpression: `set lastLoginDate = :lastLoginDate`,
+    ExpressionAttributeValues: {
+      ':lastLoginDate': member.lastLoginDate,
+    },
+  }
+  if (member.loginCount) {
+    record['UpdateExpression'] = record['UpdateExpression'] + `, loginCount = :loginCount`
+    record['ExpressionAttributeValues'][':loginCount'] = member.loginCount
+  }
+  await helper.updateRecord(record)
+  logger.info('DynamoDB record is updated successfully.')
+
+  // send output message to Kafka
+  const outputMessage = {
+    topic: config.USER_UPDATE_OUTPUT_TOPIC,
+    originator: config.OUTPUT_MESSAGE_ORIGINATOR,
+    timestamp: new Date().toISOString(),
+    'mime-type': 'application/json',
+    payload: member
+  }
+  await producer.send({ topic: outputMessage.topic, message: { value: JSON.stringify(outputMessage) } })
+  logger.info(`Member profile update message is successfully sent to Kafka topic ${outputMessage.topic}`)
+}
+
+processUserLogin.schema = {
+  message: joi.object().keys({
+    topic: joi.string().required(),
+    originator: joi.string().required(),
+    timestamp: joi.date().required(),
+    'mime-type': joi.string().required(),
+    payload: joi.object().keys({
+      userId: joi.number().required(),
+      loginCount: joi.number(),
+      lastLoginDate: joi.date().raw().required(),
+    }).unknown(true).required()
+  }).required(),
+  producer: joi.object().required()
+}
+
 module.exports = {
   processCreateUser,
-  processUpdateUser
+  processUpdateUser,
+  processUserLogin
 }
 
 logger.buildService(module.exports)
