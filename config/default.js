@@ -22,6 +22,7 @@ module.exports = {
   // Kafka topics related to Creation and Update of User
   USER_CREATE_TOPIC: process.env.USER_CREATE_TOPIC || 'identity.notification.create',
   USER_UPDATE_TOPIC: process.env.USER_UPDATE_TOPIC || 'identity.notification.update',
+  USER_LOGIN_TOPIC: process.env.USER_LOGIN_TOPIC || 'member.action.login',
 
   // Kafka output topics to be consumed by member-processor-es to save member profile data in Elasticsearch
   USER_CREATE_OUTPUT_TOPIC: process.env.USER_CREATE_OUTPUT_TOPIC || 'member.action.profile.create',
