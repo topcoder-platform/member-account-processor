@@ -68,6 +68,9 @@ const dataHandler = async (messageSet, topic, partition) => {
             logger.info('Ignore message.')
           }
           break
+        case config.USER_LOGIN_TOPIC:
+          await ProcessorService.processUserLogin(messageJSON, producer)
+          break
         default:
           throw new Error(`Invalid topic: ${topic}`)
       }
@@ -103,7 +106,7 @@ producer
     logger.info('Starting kafka consumer')
     return consumer
       .init([{
-        subscriptions: [config.USER_CREATE_TOPIC, config.USER_UPDATE_TOPIC],
+        subscriptions: [config.USER_CREATE_TOPIC, config.USER_UPDATE_TOPIC, config.USER_LOGIN_TOPIC],
         handler: dataHandler
       }])
   })
