@@ -36,6 +36,7 @@ async function sendHarmonyEvent (eventType, payloadType, payload) {
     payloadType,
     payload
   }
+
   if (payloadType === 'Member') {
     // For Member payload, set id as userId
     event.payload = {
@@ -43,19 +44,12 @@ async function sendHarmonyEvent (eventType, payloadType, payload) {
       ...payload
     }
   }
-  return new Promise((resolve, reject) => {
-    harmonyClient.invoke({
-      FunctionName: config.HARMONY_LAMBDA_FUNCTION,
-      InvocationType: 'Event',
-      Payload: JSON.stringify(event)
-    }, (err, data) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(data)
-      }
-    })
-  })
+
+  await harmonyClient.invoke({
+    FunctionName: config.HARMONY_LAMBDA_FUNCTION,
+    InvocationType: 'Event',
+    Payload: JSON.stringify(event)
+  }).promise()
 }
 
 /*

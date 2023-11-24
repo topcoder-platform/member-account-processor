@@ -51,5 +51,6 @@ module.exports = {
   // List of registration sources that should carry over original registration url (retUrl); users registering
   // through these sources will be taken to retUrl at the end of the onboarding process
   FORWARD_TO_RET_URL_REG_SOURCES: process.env.FORWARD_TO_RET_URL_REG_SOURCES || ['challenges'],
-  HARMONY_LAMBDA_FUNCTION: process.env.HARMONY_LAMBDA_FUNCTION
+
+  HARMONY_LAMBDA_FUNCTION: process.env.HARMONY_LAMBDA_FUNCTION || 'arn:aws:lambda:us-east-1:811668436784:function:harmony-api-dev-processMessage'
 }
