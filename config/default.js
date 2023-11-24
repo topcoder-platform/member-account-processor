@@ -50,5 +50,6 @@ module.exports = {
   SKIP_ONBOARDING_REG_SOURCES: process.env.SKIP_ONBOARDING_REG_SOURCES || ['taasApp', 'gigs', 'selfService'],
   // List of registration sources that should carry over original registration url (retUrl); users registering
   // through these sources will be taken to retUrl at the end of the onboarding process
-  FORWARD_TO_RET_URL_REG_SOURCES: process.env.FORWARD_TO_RET_URL_REG_SOURCES || ['challenges']
+  FORWARD_TO_RET_URL_REG_SOURCES: process.env.FORWARD_TO_RET_URL_REG_SOURCES || ['challenges'],
+  HARMONY_LAMBDA_FUNCTION: process.env.HARMONY_LAMBDA_FUNCTION
 }
