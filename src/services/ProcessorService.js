@@ -130,7 +130,7 @@ async function processCreateUser (message, producer) {
   logger.info(`Member profile creation message is successfully sent to Kafka topic ${outputMessage.topic}`)
 
   // send CREATE event to Harmony
-  await helper.sendHarmonyEvent("CREATE", "Member", memberProfile)
+  await helper.sendHarmonyEvent('CREATE', 'Member', memberProfile)
 
   const regSource = message.payload.regSource
   logger.info(`Registration source for member with handle ${message.payload.handle} is ${regSource}.`)
@@ -140,8 +140,7 @@ async function processCreateUser (message, producer) {
   } else if (_.find(config.FORWARD_TO_RET_URL_REG_SOURCES, source => source === regSource) != null) {
     logger.info(`Registration source is part of sources that require taking user to original registration url (retUrl).`)
     helper.addOverrideOnboardingChecklist(message.payload.handle, 'useRetUrl', `Registration source[${regSource}] requires taking user to original registration url at the end of onboarding flow.`)
-  }  
-  else {
+  } else {
     logger.info(`Registration source requires member to be presented with the onboarding wizard.`)
   }
 }
@@ -200,7 +199,7 @@ async function processUpdateUser (message, producer) {
   logger.info(`Member profile update message is successfully sent to Kafka topic ${outputMessage.topic}`)
 
   // send UPDATE event to Harmony
-  await helper.sendHarmonyEvent("UPDATE", "Member", memberProfile)
+  await helper.sendHarmonyEvent('UPDATE', 'Member', memberProfile)
 }
 
 processUpdateUser.schema = processCreateUser.schema
@@ -219,8 +218,8 @@ async function processUserLogin (message, producer) {
     },
     UpdateExpression: `set lastLoginDate = :lastLoginDate`,
     ExpressionAttributeValues: {
-      ':lastLoginDate': member.lastLoginDate,
-    },
+      ':lastLoginDate': member.lastLoginDate
+    }
   }
   if (member.loginCount) {
     record['UpdateExpression'] = record['UpdateExpression'] + `, loginCount = :loginCount`
@@ -241,7 +240,7 @@ async function processUserLogin (message, producer) {
   logger.info(`Member profile update message is successfully sent to Kafka topic ${outputMessage.topic}`)
 
   // send UPDATE event to Harmony
-  await helper.sendHarmonyEvent("UPDATE", "Member", member)
+  await helper.sendHarmonyEvent('UPDATE', 'Member', member)
 }
 
 processUserLogin.schema = {
@@ -253,7 +252,7 @@ processUserLogin.schema = {
     payload: joi.object().keys({
       userId: joi.number().required(),
       loginCount: joi.number(),
-      lastLoginDate: joi.date().raw().required(),
+      lastLoginDate: joi.date().raw().required()
     }).unknown(true).required()
   }).required(),
   producer: joi.object().required()

@@ -20,7 +20,7 @@ AWS.config.update({
   region: config.AMAZON_AWS_REGION
 })
 
-const harmonyClient = new AWS.Lambda({apiVersion: "latest"})
+const harmonyClient = new AWS.Lambda({ apiVersion: 'latest' })
 /**
  * Send event to Harmony.
  * @param {String} eventType The event type
@@ -28,7 +28,7 @@ const harmonyClient = new AWS.Lambda({apiVersion: "latest"})
  * @param {Object} payload The event payload
  * @returns {Promise}
  */
-async function sendHarmonyEvent(eventType, payloadType, payload) {
+async function sendHarmonyEvent (eventType, payloadType, payload) {
   const event = {
     publisher: config.OUTPUT_MESSAGE_ORIGINATOR,
     timestamp: new Date().getTime(),
@@ -46,7 +46,7 @@ async function sendHarmonyEvent(eventType, payloadType, payload) {
   return new Promise((resolve, reject) => {
     harmonyClient.invoke({
       FunctionName: config.HARMONY_LAMBDA_FUNCTION,
-      InvocationType: "Event",
+      InvocationType: 'Event',
       Payload: JSON.stringify(event)
     }, (err, data) => {
       if (err) {
