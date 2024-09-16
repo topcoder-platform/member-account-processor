@@ -115,6 +115,7 @@ async function processCreateUser (message, producer) {
   const record = formatRecord(memberProfile)
 
   // create or update member profile in DynamoDB
+  logger.info('Creating DynamoDB record.')
   await helper.updateRecord(record)
   logger.info('DynamoDB record is created successfully.')
 
