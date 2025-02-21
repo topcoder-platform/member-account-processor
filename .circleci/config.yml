@@ -36,7 +36,7 @@ build_steps: &build_steps
             source awsenvconf
             ./buildenv.sh -e ${DEPLOY_ENV} -b ${LOGICAL_ENV}-member-account-processor-deployvar
             source buildenvvar
-            ./master_deploy.sh -d ECS -e ${DEPLOY_ENV} -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-member-account-processor-appvar -i member-account-processor
+            ./master_deploy.sh -d ECS -e ${DEPLOY_ENV} -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-member-account-processor-appvar -i member-account-processor -p FARGATE
 jobs:
   # Build & Deploy against development backend
   "build-dev":
